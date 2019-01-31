@@ -14,7 +14,7 @@ class PsudoAI:
         self.s.connect((host, port))
 
     def get_game_status(self):
-        self.game_over = s.recv(1024)
+        self.game_status = self.s.recv(1024)
 
     def play(self):
         self.move = input("What is your move? ")
@@ -23,13 +23,23 @@ class PsudoAI:
     def destroy(self):
         self.s.close()
 
-# Testing module
+# For debugging purpose
+def print_game_status(game_status):
+    cnt = 0
+    for i in agent.game_status[1:len(agent.game_status)]:
+        if cnt == 9:
+            cnt = 0
+            print()
+        print(int(i),end = ' ') 
+        cnt += 1
+    print('\n')
+
 if __name__ == "__main__":
     agent = PsudoAI()
     while 1:
+        agent.get_game_status()
+        print_game_status(agent.game_status)
         agent.play()
         if agent.move == 'q':
             break
     agent.destroy()
-
-
