@@ -15,10 +15,12 @@ B_R             = CELL_W * 0.87             # Bricks radius
 HUMAN_VS_HUMAN  = 0
 HUMAN_VS_AI     = 1
 AI_VS_AI        = 2
-FREE            = '_'
+FREE            = 0
 FREE_CONFIG     = {'fill' : '', 'width' : 0}
-BLACK           = 'black'
+BLACK           = 1
 BLACK_CONFIG    = {'fill' : 'black', 'width' : 3}
-WHITE           = 'white'
+WHITE           = 2
 WHITE_CONFIG    = {'fill' : 'white', 'width' : 3}
+PLAYER_1        = True
+PLAYER_2        = False
 
