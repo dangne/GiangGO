@@ -1,6 +1,6 @@
 import socket
 
-class PsudoAI:
+class PseudoAI:
     def __init__(self):
         self.setup_networking()
 
@@ -35,7 +35,7 @@ def print_game_status(game_status):
     print('\n')
 
 if __name__ == "__main__":
-    agent = PsudoAI()
+    agent = PseudoAI()
     while 1:
         agent.get_game_status()
         print_game_status(agent.game_status)
