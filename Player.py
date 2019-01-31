@@ -1,11 +1,11 @@
 from socket import *
 
 class Player:
-    name = ''
     ready = False
 
-    def __init__(self, name):
+    def __init__(self, name, is_human):
         self.name = name
+        self.is_human = is_human
         print('Player', self.name, 'say hi!')
 
     def play(self):
