@@ -3,9 +3,9 @@ import socket
 # Player object for AI will act as a server
 # The AI will be implemented in a different python program and it will act as a client
 class Player:
-    def __init__(self, name, is_human):
+    def __init__(self, name, kind):
         self.name = name
-        self.is_human = is_human
+        self.kind = kind 
         print('Player', self.name, 'say hello!')
 
         if not is_human:
@@ -18,7 +18,11 @@ class Player:
 
         # Create socket object
         self.s = socket.socket()
-        self.s.bind((self.host, self.port))
+        try:
+            self.s.bind((self.host, self.port))
+        except:
+            self.port = 5001
+            self.s.bind((self.host, self.port))
 
         # Connect to AI
         self.s.listen(1) 

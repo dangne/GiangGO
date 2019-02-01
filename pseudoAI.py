@@ -36,10 +36,21 @@ def print_game_status(game_status):
 
 if __name__ == "__main__":
     agent = PseudoAI()
+    agent2 = PseudoAI()
     while 1:
-        agent.get_game_status()
-        print_game_status(agent.game_status)
+        # Turn 1
+        #agent.get_game_status()
+        #print_game_status(agent.game_status)
         agent.play()
         if agent.move == 'q':
             break
+
+        # Turn 2
+        #agent2.get_game_status()
+        #print_game_status(agent2.game_status)
+        agent2.play()
+        if agent2.move == 'q':
+            break
+
     agent.destroy()
+    agent2.destroy()

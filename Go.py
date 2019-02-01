@@ -3,7 +3,7 @@ from Constants import *
 from copy import deepcopy
 
 class Go:
-    mode        = HUMAN_VS_HUMAN
+    mode        = (HUMAN, HUMAN) 
     status      = [[FREE]*9 for _ in range(9)]
     prev_status = [[None]*9 for _ in range(9)]
     stone       = [[None]*9 for _ in range(9)]
@@ -11,7 +11,7 @@ class Go:
     over        = False
     turn        = PLAYER_1 
 
-    def __init__(self, game_mode = HUMAN_VS_HUMAN, display = True):
+    def __init__(self, game_mode = (HUMAN, HUMAN), display = True):
         print('Go - init')
         self.game_mode = game_mode
         if display:
@@ -20,10 +20,10 @@ class Go:
             self.draw_board()
             self.draw_stones()
 
-        if self.game_mode != HUMAN_VS_HUMAN:
+        if self.game_mode != (HUMAN, HUMAN):
             self.init_console_input()
 
-        if self.game_mode != AI_VS_AI:
+        if self.game_mode != (AI, AI):
             self.init_graphical_input()
 
 
