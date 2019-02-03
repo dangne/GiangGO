@@ -170,4 +170,7 @@ class Go:
         return current_status
 
     def update(self): # Update GUI display
+        for i in range(9):
+            for j in range(9):
+                self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]])
         self.root.update()
