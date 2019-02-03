@@ -3,33 +3,31 @@ from Constants import *
 from copy import deepcopy
 
 class Go:
-    mode        = (HUMAN, HUMAN) 
-    status      = [[FREE]*9 for _ in range(9)]
-    prev_status = [[None]*9 for _ in range(9)]
-    stone       = [[None]*9 for _ in range(9)]
-    prev_stone  = (None, None)
-    over        = False
-    turn        = PLAYER_1 
+    mode        = (HUMAN, HUMAN)                # Indicates if the game is HUMAN vs HUMAN or HUMAN vs AI or AI vs AI 
+    status      = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
+    prev_status = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
+    stone       = [[None]*9 for _ in range(9)]  # (GUI purpose) Hold IDs of stones on the canvas 
+    prev_stone  = (None, None)                  # (GUI purpose) Hold ID of the previous stone that the mouse hovered by
+    over        = False                         # If game is over => over = True
+    turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
 
     def __init__(self, game_mode = (HUMAN, HUMAN), display = True):
-        print('Go - init')
         self.game_mode = game_mode
+        # User can decide to turn on or off the display to enhance processing speed
+        # For example: in AI vs AI training mode, turning on the display may not be necessary
         if display:
             self.draw_window()
             self.draw_menu()
             self.draw_board()
             self.draw_stones()
 
-        if self.game_mode != (HUMAN, HUMAN):
-            self.init_console_input()
-
+        # Graphical input only needed if one of the player is HUMAN
         if self.game_mode != (AI, AI):
             self.init_graphical_input()
 
 
 
     def draw_window(self):
-        print('Go - draw_window')
         # Create Tk object
         self.root = Tk()
 
@@ -37,12 +35,10 @@ class Go:
         self.root.title('GiangGo')
         self.root.config(width = SCREEN_W, height = SCREEN_H, bg = 'white')
         self.root.resizable(False, False)
-        #self.root.bind('<Motion>', self.motion)
 
 
 
     def draw_menu(self):
-        print('Go - draw_menu')
         # Create menu widget
         self.main_menu = Menu(self.root)
 
@@ -58,13 +54,9 @@ class Go:
 
 
     def draw_board(self):
-        print('Go - draw_board')
         # Create canvas widget
         self.canvas = Canvas(self.root, width = CANVAS_W, height = CANVAS_H, bg = 'white')
         self.canvas.place(relx = 0.5, rely = 0.5, anchor = CENTER)
-
-        # Draw invisible background to determind the region of the board game
-        self.board = self.canvas.create_rectangle(X0, Y0, X0 + BOARD_W, Y0 + BOARD_H, fill = 'white', tag = 'board')
 
         # Draw lines
         [[self.canvas.create_line(X0 + (CELL_W)*i,
@@ -91,7 +83,6 @@ class Go:
 
 
     def draw_stones(self):
-        print('Go - draw_stone')
         self.stone = [[self.canvas.create_oval(X0 - B_R/2 + (CELL_W)*j,
                                                 Y0 - B_R/2 + (CELL_W)*i,
                                                 X0 + B_R/2 + (CELL_W)*j,
@@ -102,31 +93,29 @@ class Go:
                                                 for i in range(9)]
 
 
-    def init_console_input(self):
-        print('Go - init_console_input')
 
     def init_graphical_input(self):
-        print('Go - init_graphical_input')
+        # Hover effect
         def motion(event):
             config = self.canvas.itemconfig
             curr_i = int((event.y - Y0 + CELL_H/2)/CELL_H)
             curr_j = int((event.x - X0 + CELL_W/2)/CELL_W)
 
+            # If previous position is stone-free, terminate previous hover effect
             if None not in self.prev_stone:
                 prev_i, prev_j = self.prev_stone
                 if self.status[prev_i][prev_j] == FREE:
                     config(self.stone[prev_i][prev_j], FREE_CONFIG)
 
+            # If current position is stone-free, display hover effect
             if self.is_inside(event.x, event.y) and self.status[curr_i][curr_j] == FREE:
                 self.prev_stone = (curr_i, curr_j)
                 config(self.stone[curr_i][curr_j], BLACK_CONFIG if self.turn else WHITE_CONFIG)
 
-        #self.canvas.tag_bind('board', '<Motion>', lambda event : motion(event))
         self.canvas.bind('<Motion>', lambda event : motion(event))
         self.canvas.tag_bind('stone', '<Button-1>', self.read_graphical_input) 
 
     def read_console_input(self, move):
-        print('Go - read_console_input')
         config  = self.canvas.itemconfig
 
         self.prev_status = deepcopy(self.status)
@@ -139,12 +128,13 @@ class Go:
         self.turn = not self.turn
 
     def read_graphical_input(self, event):
-        print('Go - read_graphical_input')
         #if self.legit_move():
         self.prev_status = deepcopy(self.status)
+
         config  = self.canvas.itemconfig
         i = int((event.y - Y0 + CELL_H/2)/CELL_H)
         j = int((event.x - X0 + CELL_W/2)/CELL_W)
+
         if self.is_inside(event.x, event.y) and self.status[i][j] == FREE:
             # Update data
             self.status[i][j] = BLACK if self.turn else WHITE
@@ -167,11 +157,11 @@ class Go:
     def about(self):
         pass
 
-    def is_inside(self, x, y):
+    def is_inside(self, x, y): # Check if the mouse lie inside the game board
         return X0 - CELL_W/2 < x < X0 + BOARD_W + CELL_W/2 and \
                Y0 - CELL_H/2 < y < Y0 + BOARD_H + CELL_H/2
 
-    def get_status(self):
+    def get_status(self): # Return a 82-long integer list. First number indicates self.over
         current_status = [int(self.over)]
         for i in range(9):
             for j in range(9):
@@ -179,5 +169,5 @@ class Go:
 
         return current_status
 
-    def update(self):
+    def update(self): # Update GUI display
         self.root.update()

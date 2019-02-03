@@ -13,7 +13,7 @@ class PseudoAI:
 
         # Create socket object
         self.s = socket.socket()
-        self.s.connect(('', self.port))
+        self.s.connect((self.host, self.port))
 
     def get_game_status(self):
         self.game_status = self.s.recv(1024)
@@ -41,8 +41,8 @@ if __name__ == "__main__":
     #agent2 = PseudoAI(PLAYER_2)
     while 1:
         # Turn 1
-        #agent.get_game_status()
-        #print_game_status(agent.game_status)
+        agent.get_game_status()
+        print_game_status(agent.game_status)
         agent.play()
         if agent.move == 'q':
             break
