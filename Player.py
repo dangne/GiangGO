@@ -39,7 +39,7 @@ class Player:
 
     def get_game_status(self, game_status):
         if self.kind != HUMAN:
-            self.connection.send(bytes(gam'', e_status)) 
+            self.connection.send(bytes(game_status)) 
 
     def destroy(self):
         self.connection.close()
