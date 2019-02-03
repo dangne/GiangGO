@@ -1,17 +1,19 @@
+from Constants import *
 import socket
 
 class PseudoAI:
-    def __init__(self):
-        self.setup_networking()
+    def __init__(self, port):
+        self.setup_networking(port)
 
-    def setup_networking(self):
-        # Networking configuration 
-        host = '127.0.0.1'
-        port = 5000
+    def setup_networking(self, port): # Networking configuration 
+        self.host = '127.0.0.1' 
+        self.port = 5000 + port
+
+        print(self.host, self.port)
 
         # Create socket object
         self.s = socket.socket()
-        self.s.connect((host, port))
+        self.s.connect(('', self.port))
 
     def get_game_status(self):
         self.game_status = self.s.recv(1024)
@@ -35,8 +37,8 @@ def print_game_status(game_status):
     print('\n')
 
 if __name__ == "__main__":
-    agent = PseudoAI()
-    agent2 = PseudoAI()
+    agent = PseudoAI(PLAYER_2)
+    #agent2 = PseudoAI(PLAYER_2)
     while 1:
         # Turn 1
         #agent.get_game_status()
@@ -48,9 +50,9 @@ if __name__ == "__main__":
         # Turn 2
         #agent2.get_game_status()
         #print_game_status(agent2.game_status)
-        agent2.play()
-        if agent2.move == 'q':
-            break
+        #agent2.play()
+        #if agent2.move == 'q':
+        #    break
 
     agent.destroy()
-    agent2.destroy()
+    #agent2.destroy()

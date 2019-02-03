@@ -12,8 +12,6 @@ CELL_W          = BOARD_W/8
 CELL_H          = BOARD_H/8
 S_R             = SCREEN_W * 0.0075         # Star points radius
 B_R             = CELL_W * 0.87             # Bricks radius
-HUMAN           = True
-AI              = False
 FREE            = 0
 FREE_CONFIG     = {'fill' : '', 'width' : 0}
 BLACK           = 1
@@ -22,4 +20,5 @@ WHITE           = 2
 WHITE_CONFIG    = {'fill' : 'white', 'width' : 3}
 PLAYER_1        = True
 PLAYER_2        = False
-
+HUMAN           = True
+AI              = False
