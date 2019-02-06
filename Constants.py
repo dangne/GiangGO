@@ -1,10 +1,10 @@
 # Game dimension 
-SCREEN_W        = 720
-SCREEN_H        = 720
+SCREEN_W        = 810
+SCREEN_H        = 810
 CANVAS_W        = SCREEN_W
 CANVAS_H        = SCREEN_H
-BOARD_W         = CANVAS_W * 0.8
-BOARD_H         = CANVAS_H * 0.8
+BOARD_W         = CANVAS_W * 0.7
+BOARD_H         = CANVAS_H * 0.7
 CELL_W          = BOARD_W/8
 CELL_H          = BOARD_H/8
 S_R             = SCREEN_W * 0.0075         # Star points radius

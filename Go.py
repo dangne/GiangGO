@@ -10,7 +10,6 @@ class Go:
     prev_stone  = (None, None)                  # (GUI purpose) Hold ID of the previous stone that the mouse hovered by
     over        = False                         # If game is over => over = True
     turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
-    move_count  = 0
 
     def __init__(self, game_mode, display = True):
         self.game_mode = game_mode
@@ -85,6 +84,7 @@ class Go:
 
 
     def draw_stones(self):
+        # Initially, all stones are invisible (FREE_CONFIG)
         self.stone = [[self.canvas.create_oval(X0 - B_R/2 + (CELL_W)*j,
                                                 Y0 - B_R/2 + (CELL_W)*i,
                                                 X0 + B_R/2 + (CELL_W)*j,
@@ -97,9 +97,12 @@ class Go:
 
 
     def draw_text(self):
+        # Coordinates
         for i in range(9):
             self.canvas.create_text(X0 + CELL_W*i, Y0 - CELL_H/3, text = str(i))
             self.canvas.create_text(X0 - CELL_W/3, Y0 + CELL_H*i, text = str(i))
+
+
 
     def init_graphical_input(self):
         # Hover effect
@@ -146,40 +149,41 @@ class Go:
 
 
     def valid_move(self, move):
+        def is_alive(x, y):
+            # Same idea of Khoi :3
+            if not all(0 <= i <= 8 for i in (x, y)): return False
+            if self.temp_status[x][y] == FREE: return True
+            if self.visited[x][y] or self.temp_status[x][y] != self.color: return False
+            self.visited[x][y] = True
+            return any(is_alive(x + i, y + j) for (i, j) in ((0, -1), (0, 1), (-1, 0), (1, 0)))
+             
         # First, check for elementary conditions
-        (i, j) = move
+        i, j = move
         if not (all(0 <= _ <= 8 for _ in move) and self.status[i][j] == FREE):
             return False
 
         self.temp_status        = deepcopy(self.status)
         self.temp_status[i][j]  = BLACK if self.turn else WHITE
 
-
         # Second, if pass, check for capture_success 
-        if self.capture_check():
+        if self.capture():
             # If capture success, check for Ko rule 
             return self.prev_status != self.temp_status 
         else:
-            # If capture fail, check for liberties
-            #opponent_color  = WHITE if self.turn else BLACK
-            color           = BLACK if self.turn else WHITE
-            self.visited    = [[False]*9 for _ in range(9)]
-            self.capture_success = True
-            self.live_check(color, i, j)
-
-            # If capture_success == fail then the stone lives => valid move
-            return not self.capture_success
+            # If capture fail, check for alive condition
+            self.visited = [[False]*9 for _ in range(9)]
+            self.color   = BLACK if self.turn else WHITE 
+            return is_alive(i, j)
 
 
 
     def make_move(self, move):
         # IMPORTANT!
         # Call this method only when a move is verified as a valid move 
-        (i, j) = move
+        i, j = move
 
         # Announce 
-        self.move_count += 1
-        print(str(self.move_count) + '. Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')')
+        print('Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')')
 
         # Record result (For Ko rule)
         self.prev_status    = deepcopy(self.status)
@@ -195,39 +199,79 @@ class Go:
 
 
 
-    def live_check(self, opponent_color, x, y):
-        if not all(0 <= i <= 8 for i in (x, y)) or self.visited[x][y]:
-            return 
-
-        if self.temp_status[x][y] == FREE:
-            self.capture_success = False
-            return
-        else:
+    def capture(self):
+        # This method puts all connected stones into one list then kill them all if capture condition is true
+        def BFS(x, y):
+            if not all(-1 < i < 9 for i in (x, y)):
+                return 
+            if self.temp_status[x][y] == FREE:
+                self.is_captured = False 
+            if self.visited[x][y] or self.temp_status[x][y] != self.opponent_color: 
+                return
             self.visited[x][y] = True
+            self.connected_stones.append((x, y))
+            [BFS(x + i, y + j) for (i, j) in ((0, -1), (0, 1), (-1, 0), (1, 0))]
 
-        if self.temp_status[x][y] != opponent_color:
-            return 
-        [self.live_check(opponent_color, x+i, y+j) for (i, j) in ((0,-1), (0,1), (-1,0), (1,0))]
-        if self.capture_success:
-            self.temp_status[x][y] = FREE
-
-
-
-    def capture_check(self):
-        self.visited        = [[False]*9 for _ in range(9)]
-        self.live_status    = [[True]*9 for _ in range(9)]
-        success             = False
-        opponent_color      = WHITE if self.turn else BLACK
+        self.visited             = [[False]*9 for _ in range(9)]
+        self.opponent_color      = WHITE if self.turn else BLACK
+        self.is_captured         = True
+        self.capture_success     = False
 
         for i in range(9):
             for j in range(9):
-                if not self.visited[i][j] and self.temp_status[i][j] == opponent_color:
-                    self.capture_success = True
-                    self.live_check(opponent_color, i, j)
-                    if self.capture_success:
-                        success = True 
+                if not self.visited[i][j] and self.temp_status[i][j] == self.opponent_color:
+                    self.is_captured         = True
+                    self.connected_stones    = []
+                    BFS(i, j)
+                    if self.is_captured:
+                        self.capture_success = True 
+                        for _ in self.connected_stones:
+                            self.temp_status[_[0]][_[1]] = FREE
 
-        return success
+        return self.capture_success
+
+    def grouping_area(self, area_check_list, x, y):
+        if x<0 or x>8 or y<0 or y>8 or area_check_list[x][y]==1:
+            return 0,0,0
+
+        if self.status[x][y]==0:
+            area_check_list[x][y]=1
+            cu,bu,wu = self.grouping_area(area_check_list,x-1,y)
+            cd,bd,wd = self.grouping_area(area_check_list,x+1,y)
+            cl,bl,wl = self.grouping_area(area_check_list,x,y-1)
+            cr,br,wr = self.grouping_area(area_check_list,x,y+1)
+            c=cu+cd+cl+cr
+            b=bu|bd|bl|br
+            w=wu|wd|wl|wr
+            return c+1,b,w
+
+        if self.status[x][y]==1:
+            return 0,1,0
+
+        if self.status[x][y]==2:
+            return 0,0,1
+
+
+
+    def score(self):
+        area_check_list=[[0]*9 for _ in range(9)]
+        self.black_score=0
+        self.white_score=7
+
+        for i in range(9):
+            for j in range(9):
+                if self.status[i][j]==0 and area_check_list[i][j]==0:
+                    c,b,w=self.grouping_area(area_check_list, i, j)
+                    if b==1 and w==0:
+                        self.black_score+=c 
+                    if b==0 and w==1:
+                        self.white_score+=c
+                if self.status[i][j]==1:
+                    self.black_score+=1
+                if self.status[i][j]==2:
+                    self.white_score+=1
+        return self.black_score,self.white_score
+
 
 
     def new_game(self):

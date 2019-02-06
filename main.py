@@ -10,12 +10,14 @@ def main():
     print("Game begin!")
     while not game.over:
         print("Player 1 turn")
+        print(game.score())
         while game.turn == PLAYER_1:
             if not P1.kind:
                 P1.get_game_status(game.get_status())
                 game.read_console_input(P1.make_move())
             game.update()
 
+        print(game.score())
         print("Player 2 turn")
         while game.turn == PLAYER_2:
             if not P2.kind:
