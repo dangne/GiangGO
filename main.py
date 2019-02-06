@@ -5,7 +5,7 @@ from time import sleep
 
 def main():
     P1 = Player(name = 'Dang'   , kind = HUMAN, port = PLAYER_1)
-    P2 = Player(name = 'GiangGO', kind = AI, port = PLAYER_2)
+    P2 = Player(name = 'GiangGO', kind = HUMAN, port = PLAYER_2)
     game = Go(game_mode = (P1.kind, P2.kind))
     print("Game begin!")
     while not game.over:
