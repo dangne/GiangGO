@@ -1,4 +1,7 @@
 from tkinter import *
+from tkinter import ttk
+from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import asksaveasfilename
 from Constants import *
 from copy import deepcopy
 
@@ -48,6 +51,7 @@ class Go:
         self.main_menu.add_command(label = 'New game', command = self.new_game)
         self.main_menu.add_command(label = 'Open game', command = self.open_game)
         self.main_menu.add_command(label = 'Save game', command = self.save_game)
+        self.main_menu.add_command(label = 'Help', command = self.help)
         self.main_menu.add_command(label = 'About', command = self.about)
 
         # Display menu
@@ -306,29 +310,54 @@ class Go:
 
 
     def open_game(self):
-        open_file_success = False
+        filename = askopenfilename(initialdir="./",
+                               filetypes =(("Text File", "*.txt"),("All Files","*.*")),
+                               title = "Choose a file.")
         try:
-            game_data = open("game_data.txt", "r")
-            open_file_success = True
-        except:
-            print("game_data.txt not found")
+            data_in = open(filename, 'r')
 
-        if open_file_success:
+            # Reset game
             self.new_game()
+
+            # Read game turn information
+            self.turn = bool(int(data_in.readline()[0]))
+
+            # Read game status information
             for i in range(9):
-                data = game_data.readline()
+                data = data_in.readline()
                 # Remove endline character
                 self.status[i] = list(map(int, data[:len(data)-1]))
-                for i in range(9):
-                    for j in range(9):
-                        self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]]) 
 
+            # Update GUI
+            for i in range(9):
+                for j in range(9):
+                    self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]]) 
+        except:
+            print("An error occurred. Make sure your file exists.")
 
 
     def save_game(self):
+        # Game data includes: current status, turn 
+        filename = asksaveasfilename(initialdir="./",
+                               filetypes =(("Text File", "*.txt"),("All Files","*.*")),
+                               title = "Choose a file.")
+
+        data_out = open(filename, "w")
+
+        # Write turn information
+        data_out.write(str(int(self.turn)) + '\n')
+
+        # Write status information
+        for i in range(9):
+            for j in range(9):
+                data_out.write(str(self.status[i][j]))
+            data_out.write('\n')
+        print("Game is saved")
+
+
+
+    def help(self):
         pass
-
-
 
     def about(self):
         pass
