@@ -5,7 +5,7 @@ from time import sleep
 
 def main():
     P1 = Player(name = 'Dang'   , kind = HUMAN, port = PLAYER_1)
-    P2 = Player(name = 'GiangGO', kind = AI, port = PLAYER_2)
+    P2 = Player(name = 'GiangGO', kind = HUMAN, port = PLAYER_2)
     game = Go(game_mode = (P1.kind, P2.kind))
     print("Game begin!")
     while not game.over:
@@ -13,10 +13,10 @@ def main():
 
 
         # --------------- PLAYER 1 --------------- #
-        print("Player 1 turn")
         score = game.score()
         print("Player 1 score:", score[0])
-        print("Player 2 score:", score[1])
+        print("Player 2 score:", score[1], end = '\n\n')
+        print("Player 1 turn")
         if P1.kind == AI:
             P1.get_game_status(game.get_status())
         while game.turn == PLAYER_1:
@@ -28,11 +28,10 @@ def main():
 
 
         # --------------- PLAYER 2 --------------- #
-        print("Player 1 turn")
-        print("Player 2 turn")
         score = game.score()
         print("Player 1 score:", score[0])
-        print("Player 2 score:", score[1])
+        print("Player 2 score:", score[1], end = '\n\n')
+        print("Player 2 turn")
         if P2.kind == AI:
             P2.get_game_status(game.get_status())
         while game.turn == PLAYER_2:

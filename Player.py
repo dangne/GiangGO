@@ -16,10 +16,16 @@ class Player:
         # Networking configuration
         self.host = '127.0.0.1'
         self.port = 5000 + port
-
-        # Create socket object
         self.s = socket.socket()
-        self.s.bind((self.host, self.port))
+
+        # Connect
+        connect_success = False
+        while not connect_success:
+            try:
+                self.s.bind((self.host, self.port))
+                connect_success = True
+            except:
+                self.port += 1
 
         # Connect to AI
         self.s.listen(1) 
@@ -42,7 +48,6 @@ class Player:
 
     def get_valid_moves(self, valid_moves):
         if self.kind != HUMAN:
-            print(valid_moves)
             self.connection.send(bytes(valid_moves))
 
     def destroy(self):
