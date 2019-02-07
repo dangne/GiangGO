@@ -306,7 +306,22 @@ class Go:
 
 
     def open_game(self):
-        pass
+        open_file_success = False
+        try:
+            game_data = open("game_data.txt", "r")
+            open_file_success = True
+        except:
+            print("game_data.txt not found")
+
+        if open_file_success:
+            self.new_game()
+            for i in range(9):
+                data = game_data.readline()
+                # Remove endline character
+                self.status[i] = list(map(int, data[:len(data)-1]))
+                for i in range(9):
+                    for j in range(9):
+                        self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]]) 
 
 
 
