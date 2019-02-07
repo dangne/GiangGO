@@ -3,6 +3,7 @@ from Constants import *
 from copy import deepcopy
 
 class Go:
+    # Game data:
     mode        = (HUMAN, HUMAN)                # Indicates if the game is HUMAN vs HUMAN or HUMAN vs AI or AI vs AI 
     status      = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
     prev_status = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
@@ -99,8 +100,27 @@ class Go:
     def draw_text(self):
         # Coordinates
         for i in range(9):
-            self.canvas.create_text(X0 + CELL_W*i, Y0 - CELL_H/2, text = str(i))
-            self.canvas.create_text(X0 - CELL_W/2, Y0 + CELL_H*i, text = str(i))
+            # Horizontal coordiantes
+            self.canvas.create_text(X0 + CELL_W*i,
+                                    Y0 - CELL_H*0.9,
+                                    text = str(chr(ord('A') + i)),
+                                    font = COORDINATE_FONT) 
+
+            self.canvas.create_text(X0 + CELL_W*i,
+                                    YN + CELL_H*0.9,
+                                    text = str(chr(ord('A') + i)),
+                                    font = COORDINATE_FONT) 
+            
+            # Vertical coordiantes
+            self.canvas.create_text(X0 - CELL_W*0.9,
+                                    Y0 + CELL_H*i,
+                                    text = str(i),
+                                    font = COORDINATE_FONT) 
+
+            self.canvas.create_text(XN + CELL_W*0.9,
+                                    Y0 + CELL_H*i,
+                                    text = str(i),
+                                    font = COORDINATE_FONT) 
 
 
 
@@ -275,10 +295,10 @@ class Go:
 
 
     def new_game(self):
-        status      = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
-        prev_status = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
-        over        = False                         # If game is over => over = True
-        turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
+        self.status      = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
+        self.prev_status = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
+        self.over        = False                         # If game is over => over = True
+        self.turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
         for i in range(9):
             for j in range(9):
                 self.canvas.itemconfig(self.stone[i][j], FREE_CONFIG)
