@@ -14,6 +14,9 @@ Y0              = (CANVAS_H - BOARD_H)/2
 XN              = X0 + BOARD_W              # End x,y coordinates of game board
 YN              = Y0 + BOARD_H
 
+# Font configurations
+COORDINATE_FONT = ("Arial", 15) # Font size of coordinates
+
 
 FREE            = 0
 FREE_CONFIG     = {'fill' : '', 'width' : 0}
