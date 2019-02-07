@@ -1,7 +1,9 @@
 from Constants import *
+import random
 import socket
 
 class PseudoAI:
+    valid_moves = []
     def __init__(self, port):
         self.setup_networking(port)
 
@@ -18,9 +20,17 @@ class PseudoAI:
     def get_game_status(self):
         self.game_status = self.s.recv(1024)
 
+    def get_valid_moves(self):
+        self.incoming_data = self.s.recv(1024)
+        print("Print valid_moves data")
+        print(self.incoming_data == None)
+        for i in range(0, len(self.incoming_data), 2):
+            self.valid_moves.append([self.incoming_data[i], self.incoming_data[i+1]])
+
     def play(self):
-        self.move = input("What is your move? ")
-        self.s.sendall(self.move.encode('utf-8'))
+        print("pseudoAI play")
+        self.move = random.choice(self.valid_moves)
+        self.s.send(bytes(self.move))
 
     def destroy(self):
         self.s.close()
@@ -42,6 +52,7 @@ if __name__ == "__main__":
     while 1:
         # Turn 1
         agent.get_game_status()
+        agent.get_valid_moves()
         print_game_status(agent.game_status)
         agent.play()
         if agent.move == 'q':

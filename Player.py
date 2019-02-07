@@ -32,14 +32,18 @@ class Player:
 
     def make_move(self):
         if self.kind != HUMAN:
-            move = self.connection.recv(1024)
-            if move != b'q':
-                move = [int(i) for i in str(move, 'utf-8').split()]
+            move = list(self.connection.recv(1024))
+             
             return move
 
     def get_game_status(self, game_status):
         if self.kind != HUMAN:
             self.connection.send(bytes(game_status)) 
+
+    def get_valid_moves(self, valid_moves):
+        if self.kind != HUMAN:
+            print(valid_moves)
+            self.connection.send(bytes(valid_moves))
 
     def destroy(self):
         self.connection.close()

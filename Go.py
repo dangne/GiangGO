@@ -99,8 +99,8 @@ class Go:
     def draw_text(self):
         # Coordinates
         for i in range(9):
-            self.canvas.create_text(X0 + CELL_W*i, Y0 - CELL_H/3, text = str(i))
-            self.canvas.create_text(X0 - CELL_W/3, Y0 + CELL_H*i, text = str(i))
+            self.canvas.create_text(X0 + CELL_W*i, Y0 - CELL_H/2, text = str(i))
+            self.canvas.create_text(X0 - CELL_W/2, Y0 + CELL_H*i, text = str(i))
 
 
 
@@ -275,7 +275,13 @@ class Go:
 
 
     def new_game(self):
-        pass 
+        status      = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
+        prev_status = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
+        over        = False                         # If game is over => over = True
+        turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
+        for i in range(9):
+            for j in range(9):
+                self.canvas.itemconfig(self.stone[i][j], FREE_CONFIG)
 
 
 
@@ -307,6 +313,20 @@ class Go:
                 current_status.append(self.status[i][j])
         return current_status
 
+
+    def get_valid_moves(self):
+        valid_moves = []
+        for i in range(9):
+            for j in range(9):
+                if self.valid_move((i, j)):
+                    valid_moves.append(i)
+                    valid_moves.append(j)
+
+        # If there is no valid move left, the game is over
+        if len(valid_moves) == 0:
+            self.over = True
+
+        return valid_moves
 
 
     def update(self): # Update GUI display
