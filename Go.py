@@ -1,8 +1,10 @@
+import datetime
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from tkinter.filedialog import asksaveasfilename
-from Constants import *
 from copy import deepcopy
+from Constants import *
+
 
 class Go:
     # Game data:
@@ -211,7 +213,7 @@ class Go:
         i, j = move
 
         # Announce 
-        print('Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')')
+        print('=> Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')\n')
 
         # Record result (For Ko rule)
         self.prev_status    = deepcopy(self.status)
@@ -262,9 +264,6 @@ class Go:
         if x<0 or x>8 or y<0 or y>8 or area_check_list[x][y]==1:
             return 0,0,0
 
-        print(x,y)
-        print('len(status) = ', len(self.status))
-        print('len(status[x]) = ', len(self.status[x]))
         if self.status[x][y]==0:
             area_check_list[x][y]=1
             cu,bu,wu = self.grouping_area(area_check_list,x-1,y)
@@ -317,11 +316,13 @@ class Go:
 
 
     def open_game(self):
-        filename = askopenfilename(initialdir="./",
-                               filetypes =(("Text File", "*.txt"),("All Files","*.*")),
-                               title = "Choose a file.")
+        # Open file dialog
+        filename = askopenfilename(initialdir = "./",
+                                   initialfile = initialname,
+                                   filetypes = (("Text File", "*.txt"), ("All Files","*.*")),
+                                   title = "Choose a file.")
 
-        if len(filename) > 0:
+        if len(filename) > 0: # Handling the case when user hit "Cancel"
             try:
                 data_in = open(filename, 'r')
     
@@ -346,12 +347,25 @@ class Go:
 
 
     def save_game(self):
-        # Game data includes: current status, turn 
-        filename = asksaveasfilename(initialdir="./",
-                               filetypes =(("Text File", "*.txt"),("All Files","*.*")),
-                               title = "Choose a file.")
+        '''
+        Data format
+        1st line:           A single 0 or 1         (1 = black's turn, 0 = white's turn)
+        2nd - 10th line:    9x9 grid of integers    (indicates status of the game)
+        '''
 
-        if len(filename) > 0:
+        # Define default save name
+        t = datetime.datetime.now()
+        initialname = "game.record"
+        for i in [t.day, t.month, t.year, t.hour, t.minute, t.second, 'txt']:
+            initialname += '.' + str(i)
+
+        # Save file dialog
+        filename = asksaveasfilename(initialdir = "./",
+                                     initialfile = initialname,
+                                     filetypes = (("Text File", "*.txt"), ("All Files","*.*")),
+                                     title = "Choose a file.")
+
+        if len(filename) > 0: # Handling the case when user hit "Cancel"
             data_out = open(filename, "w")
     
             # Write turn information
@@ -362,6 +376,8 @@ class Go:
                 for j in range(9):
                     data_out.write(str(self.status[i][j]))
                 data_out.write('\n')
+
+            # Announcement
             print("Game is saved")
 
 
@@ -373,17 +389,29 @@ class Go:
         self.about_tab.resizable(False, False)
 
         about_content = \
-"""ABOUT
-------------------------------------------------------
+"""\
+----------------------------------------------------------
+|   ABOUT                                                |
+----------------------------------------------------------
 
-Authors:     Nguyen Minh Dang
-             Nguyen Duc Khoi
+Authors:        Nguyen Minh Dang
+                Nguyen Duc Khoi
+Institution:    Ho Chi Minh City University of Technology
+Contact:        harrynguyen2769@gmail.com
+                khoi.nguyenucd@hcmut.edu.vn
 
-Institution: Ho Chi Minh City University of Technology
 
-Contact:     harrynguyen2769@gmail.com
-             khoi.nguyenucd@hcmut.edu.vn
+
+
+----------------------------------------------------------
+|   GAME INFORMATION                                     |
+----------------------------------------------------------
+
+Board size:     9x9
+Game rule:      Chinese
+Handicap:       No 
 """
+
         self.about_message = Text(self.about_tab, bg = 'white')
         self.about_message.insert(INSERT, about_content)
         self.about_message.pack(side = LEFT, fill = BOTH)

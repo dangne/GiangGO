@@ -14,9 +14,9 @@ def main():
 
         # --------------- PLAYER 1 --------------- #
         score = game.score()
+        print("--- Player 1 turn")
         print("Player 1 score:", score[0])
-        print("Player 2 score:", score[1], end = '\n\n')
-        print("Player 1 turn")
+        print("Player 2 score:", score[1])
         if P1.kind == AI:
             P1.get_game_status(game.get_status())
         while game.turn == PLAYER_1:
@@ -29,9 +29,9 @@ def main():
 
         # --------------- PLAYER 2 --------------- #
         score = game.score()
+        print("--- Player 2 turn")
         print("Player 1 score:", score[0])
-        print("Player 2 score:", score[1], end = '\n\n')
-        print("Player 2 turn")
+        print("Player 2 score:", score[1])
         if P2.kind == AI:
             P2.get_game_status(game.get_status())
         while game.turn == PLAYER_2:
