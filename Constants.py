@@ -13,6 +13,8 @@ X0              = (CANVAS_W - BOARD_W)/2    # Begin x, y coordinates of game boa
 Y0              = (CANVAS_H - BOARD_H)/2
 XN              = X0 + BOARD_W              # End x,y coordinates of game board
 YN              = Y0 + BOARD_H
+POPUP_W         = SCREEN_W/1.25
+POPUP_H         = SCREEN_H/2
 
 # Font configurations
 COORDINATE_FONT = ("Arial", 15) # Font size of coordinates

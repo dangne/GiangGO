@@ -1,5 +1,4 @@
 from tkinter import *
-from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 from tkinter.filedialog import asksaveasfilename
 from Constants import *
@@ -36,9 +35,15 @@ class Go:
         # Create Tk object
         self.root = Tk()
 
+        COMSCREEN_W = self.root.winfo_screenwidth()
+        COMSCREEN_H = self.root.winfo_screenheight()
+        X_CENTER    = (COMSCREEN_W - SCREEN_W)/2
+        Y_CENTER    = (COMSCREEN_H - SCREEN_H)/2
+
         # Settings
         self.root.title('GiangGo')
-        self.root.config(width = SCREEN_W, height = SCREEN_H, bg = 'white')
+        self.root.config(bg = 'white')
+        self.root.geometry("%dx%d%+d%+d" % (SCREEN_W, SCREEN_H, X_CENTER, Y_CENTER))
         self.root.resizable(False, False)
 
 
@@ -51,7 +56,6 @@ class Go:
         self.main_menu.add_command(label = 'New game', command = self.new_game)
         self.main_menu.add_command(label = 'Open game', command = self.open_game)
         self.main_menu.add_command(label = 'Save game', command = self.save_game)
-        self.main_menu.add_command(label = 'Help', command = self.help)
         self.main_menu.add_command(label = 'About', command = self.about)
 
         # Display menu
@@ -258,6 +262,9 @@ class Go:
         if x<0 or x>8 or y<0 or y>8 or area_check_list[x][y]==1:
             return 0,0,0
 
+        print(x,y)
+        print('len(status) = ', len(self.status))
+        print('len(status[x]) = ', len(self.status[x]))
         if self.status[x][y]==0:
             area_check_list[x][y]=1
             cu,bu,wu = self.grouping_area(area_check_list,x-1,y)
@@ -313,27 +320,29 @@ class Go:
         filename = askopenfilename(initialdir="./",
                                filetypes =(("Text File", "*.txt"),("All Files","*.*")),
                                title = "Choose a file.")
-        try:
-            data_in = open(filename, 'r')
 
-            # Reset game
-            self.new_game()
-
-            # Read game turn information
-            self.turn = bool(int(data_in.readline()[0]))
-
-            # Read game status information
-            for i in range(9):
-                data = data_in.readline()
-                # Remove endline character
-                self.status[i] = list(map(int, data[:len(data)-1]))
-
-            # Update GUI
-            for i in range(9):
-                for j in range(9):
-                    self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]]) 
-        except:
-            print("An error occurred. Make sure your file exists.")
+        if len(filename) > 0:
+            try:
+                data_in = open(filename, 'r')
+    
+                # Reset game
+                self.new_game()
+    
+                # Read game turn information
+                self.turn = bool(int(data_in.readline()[0]))
+    
+                # Read game status information
+                for i in range(9):
+                    data = data_in.readline()
+                    # Remove endline character
+                    self.status[i] = list(map(int, data[:len(data)-1]))
+    
+                # Update GUI
+                for i in range(9):
+                    for j in range(9):
+                        self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]]) 
+            except:
+                print("An error occurred. Make sure your file exists.")
 
 
     def save_game(self):
@@ -342,26 +351,43 @@ class Go:
                                filetypes =(("Text File", "*.txt"),("All Files","*.*")),
                                title = "Choose a file.")
 
-        data_out = open(filename, "w")
+        if len(filename) > 0:
+            data_out = open(filename, "w")
+    
+            # Write turn information
+            data_out.write(str(int(self.turn)) + '\n')
+    
+            # Write status information
+            for i in range(9):
+                for j in range(9):
+                    data_out.write(str(self.status[i][j]))
+                data_out.write('\n')
+            print("Game is saved")
 
-        # Write turn information
-        data_out.write(str(int(self.turn)) + '\n')
 
-        # Write status information
-        for i in range(9):
-            for j in range(9):
-                data_out.write(str(self.status[i][j]))
-            data_out.write('\n')
-        print("Game is saved")
-
-
-
-    def help(self):
-        pass
 
     def about(self):
-        pass
+        self.about_tab = Toplevel(width = POPUP_W, height = POPUP_H, bg = 'white')
+        self.about_tab.title("About")
+        self.about_tab.geometry("%dx%d" % (POPUP_W, POPUP_H))
+        self.about_tab.resizable(False, False)
 
+        about_content = \
+"""ABOUT
+------------------------------------------------------
+
+Authors:     Nguyen Minh Dang
+             Nguyen Duc Khoi
+
+Institution: Ho Chi Minh City University of Technology
+
+Contact:     harrynguyen2769@gmail.com
+             khoi.nguyenucd@hcmut.edu.vn
+"""
+        self.about_message = Text(self.about_tab, bg = 'white')
+        self.about_message.insert(INSERT, about_content)
+        self.about_message.pack(side = LEFT, fill = BOTH)
+        self.about_message.config(state = DISABLED)
 
 
     def is_inside(self, x, y): # Check if the mouse lie inside the game board
