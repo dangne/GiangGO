@@ -1,9 +1,11 @@
 import datetime
 from tkinter import *
+from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from tkinter.filedialog import asksaveasfilename
 from copy import deepcopy
 from Constants import *
+from UniversalFunctions import *
 
 
 class Go:
@@ -15,6 +17,10 @@ class Go:
     prev_stone  = (None, None)                  # (GUI purpose) Hold ID of the previous stone that the mouse hovered by
     over        = False                         # If game is over => over = True
     turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
+    pass_cnt    = 0                             # Count the passes, if 2 then game_over
+    is_resign   = False                         # Indicates if one player decided to resign
+    is_pass     = False                         # Indicates if one player passed thy move
+    is_replay   = True                          # Indicates if user want to replay
 
     def __init__(self, game_mode, display = True):
         self.game_mode = game_mode
@@ -26,6 +32,7 @@ class Go:
             self.draw_board()
             self.draw_stones()
             self.draw_text()
+            self.draw_buttons()
 
         # Graphical input only needed if one of the player is HUMAN
         if self.game_mode != (AI, AI):
@@ -40,7 +47,7 @@ class Go:
         COMSCREEN_W = self.root.winfo_screenwidth()
         COMSCREEN_H = self.root.winfo_screenheight()
         X_CENTER    = (COMSCREEN_W - SCREEN_W)/2
-        Y_CENTER    = (COMSCREEN_H - SCREEN_H)/2
+        Y_CENTER    = (COMSCREEN_H - SCREEN_H*1.05)/2
 
         # Settings
         self.root.title('GiangGo')
@@ -68,7 +75,7 @@ class Go:
     def draw_board(self):
         # Create canvas widget
         self.canvas = Canvas(self.root, width = CANVAS_W, height = CANVAS_H, bg = 'white')
-        self.canvas.place(relx = 0.5, rely = 0.5, anchor = CENTER)
+        self.canvas.place(x = 0, y = 0)
 
         # Draw lines
         [[self.canvas.create_line(X0 + (CELL_W)*i,
@@ -108,29 +115,67 @@ class Go:
 
 
     def draw_text(self):
+        rate = 0.85
         # Coordinates
         for i in range(9):
             # Horizontal coordiantes
             self.canvas.create_text(X0 + CELL_W*i,
-                                    Y0 - CELL_H*0.9,
+                                    Y0 - CELL_H*rate,
                                     text = str(chr(ord('A') + i)),
                                     font = COORDINATE_FONT) 
 
             self.canvas.create_text(X0 + CELL_W*i,
-                                    YN + CELL_H*0.9,
+                                    YN + CELL_H*rate,
                                     text = str(chr(ord('A') + i)),
                                     font = COORDINATE_FONT) 
             
             # Vertical coordiantes
-            self.canvas.create_text(X0 - CELL_W*0.9,
+            self.canvas.create_text(X0 - CELL_W*rate,
                                     Y0 + CELL_H*i,
                                     text = str(i),
                                     font = COORDINATE_FONT) 
 
-            self.canvas.create_text(XN + CELL_W*0.9,
+            self.canvas.create_text(XN + CELL_W*rate,
                                     Y0 + CELL_H*i,
                                     text = str(i),
                                     font = COORDINATE_FONT) 
+
+
+
+    def draw_buttons(self):
+        # Small trick to ensure buttons' dimensions in pixel
+        def make_button(master, x, y, w, h, *args, **kwargs):
+            # Create a frame (which it uses pixel length unit)
+            frame = Frame(master, width = w, height = h) 
+            frame.pack_propagate(False)
+            frame.place(x = x, y = y)
+
+            # Then create a button that fill the whole frame's space
+            button = Button(frame, *args, **kwargs)
+            button.pack(fill = BOTH, expand = 1)
+            return button
+
+        x = (SCREEN_W - 2*BUTTON_W)/3
+        y = (SCREEN_H - BUTTON_H - CANVAS_H)/2 + CANVAS_H
+        # Pass button
+        self.pass_button = make_button(self.root,
+                                       x = x,
+                                       y = y,
+                                       w = BUTTON_W,
+                                       h = BUTTON_H,
+                                       bg = 'white',
+                                       text = 'PASS',
+                                       command = self.pass_b)
+
+        # Resign button
+        self.resign_button = make_button(self.root,
+                                       x = 2*x + BUTTON_W,
+                                       y = y,
+                                       w = BUTTON_W,
+                                       h = BUTTON_H,
+                                       bg = 'white',
+                                       text = 'RESIGN',
+                                       command = self.resign_b)
 
 
 
@@ -159,7 +204,9 @@ class Go:
 
     def read_console_input(self, move):
         # This method verifies validity for console input moves 
-        if not self.valid_move(move):
+        if move == bytes([9, 9]): # Pass 
+            self.pass_b()
+        elif not self.valid_move(move):
             print("Invalid move. Please try again.")
         else:
             self.make_move(move)
@@ -286,7 +333,7 @@ class Go:
     def score(self):
         area_check_list=[[0]*9 for _ in range(9)]
         self.black_score=0
-        self.white_score=7
+        self.white_score=KOMI
 
         for i in range(9):
             for j in range(9):
@@ -305,10 +352,15 @@ class Go:
 
 
     def new_game(self):
-        self.status      = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
-        self.prev_status = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
-        self.over        = False                         # If game is over => over = True
-        self.turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
+        self.status         = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
+        self.prev_status    = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
+        self.over           = False                         # If game is over => over = True
+        self.turn           = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
+        self.pass_cnt       = 0
+        self.is_resign      = False
+        self.is_pass        = False
+        self.is_replay      = True
+
         for i in range(9):
             for j in range(9):
                 self.canvas.itemconfig(self.stone[i][j], FREE_CONFIG)
@@ -383,8 +435,8 @@ class Go:
 
 
     def about(self):
-        self.about_tab = Toplevel(width = POPUP_W, height = POPUP_H, bg = 'white')
-        self.about_tab.title("About")
+        self.about_tab = Toplevel(width = POPUP_W, height = POPUP_H, bg = 'white') 
+        self.about_tab.title("About") 
         self.about_tab.geometry("%dx%d" % (POPUP_W, POPUP_H))
         self.about_tab.resizable(False, False)
 
@@ -418,6 +470,41 @@ Handicap:       No
         self.about_message.config(state = DISABLED)
 
 
+
+    def pass_b(self):
+        self.is_pass = True
+        self.pass_cnt += 1
+        self.turn = not self.turn
+
+
+
+    def resign_b(self):
+        self.is_resign = self.over = True
+
+
+
+    def result_and_replay(self):
+        # Decide who is the winner
+        if self.is_resign:
+            win = '2' if self.turn else '1'
+        else:
+            if self.black_score == self.white_score:
+                win = 0
+            else:
+                win = '2' if self.white_score > self.black_score else '1'
+
+        # Pop-up window
+        if win == 0:
+            text = 'BOTH PLAYERS ARE EVEN\nReplay?'
+        else:
+            text = 'PLAYER ' + win + ' WIN!\nReplay?'
+        self.is_replay = messagebox.askyesno("Announcement", text)
+
+        if self.is_replay:
+            self.new_game()
+
+
+
     def is_inside(self, x, y): # Check if the mouse lie inside the game board
         return X0 - CELL_W/2 < x < X0 + BOARD_W + CELL_W/2 and \
                Y0 - CELL_H/2 < y < Y0 + BOARD_H + CELL_H/2
@@ -433,19 +520,16 @@ Handicap:       No
 
 
     def get_valid_moves(self):
-        valid_moves = []
+        self.valid_moves = []
         for i in range(9):
             for j in range(9):
                 if self.valid_move((i, j)):
-                    valid_moves.append(i)
-                    valid_moves.append(j)
+                    self.valid_moves.append(i)
+                    self.valid_moves.append(j)
 
-        # If there is no valid move left, the game is over
-        if len(valid_moves) == 0:
-            self.over = True
-
-        return valid_moves
+        return self.valid_moves
 
 
     def update(self): # Update GUI display
+        if len(self.valid_moves) == 0 or self.pass_cnt >= 2: self.over = True
         self.root.update()

@@ -28,14 +28,16 @@ class Player:
                 self.port += 1
 
         # Connect to AI
+        print("Bind " + self.name + " to socket successfully")
+
         self.s.listen(1) 
         print("Waiting for connection")
         print("Note: Run pseudoAI.py as a separate program to complete the connection")
 
         # The program will wait until a connection is formed
-        self.connection, address = self.s.accept()
+        self.connection, self.address = self.s.accept()
         print("Connection successful")
-
+ 
     def make_move(self):
         if self.kind != HUMAN:
             move = list(self.connection.recv(1024))

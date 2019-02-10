@@ -1,8 +1,11 @@
 from Constants import *
+from time import sleep
 import random
 import socket
 
 class PseudoAI:
+    is_replay   = True
+    is_over     = False
     def __init__(self, port):
         self.setup_networking(port)
 
@@ -20,6 +23,8 @@ class PseudoAI:
             except:
                 self.port += 1
 
+        print("Connect successfully")
+
     def get_game_status(self):
         self.game_status = self.s.recv(1024)
 
@@ -30,42 +35,33 @@ class PseudoAI:
             self.valid_moves.append([self.incoming_data[i], self.incoming_data[i+1]])
 
     def play(self):
-        print("pseudoAI play")
-        self.move = random.choice(self.valid_moves)
+        if len(self.valid_moves) > 0:
+            self.move = random.choice(self.valid_moves)
+        else:
+            self.move = [9, 9] # Equivalent with pass
         self.s.send(bytes(self.move))
 
     def destroy(self):
         self.s.close()
 
-# For debugging purpose
-def print_game_status(game_status):
-    cnt = 0
-    for i in agent.game_status[1:len(agent.game_status)]:
-        if cnt == 9:
-            cnt = 0
-            print()
-        print(int(i),end = ' ') 
-        cnt += 1
-    print('\n')
+def main():
+    agent = PseudoAI(PLAYER_1)
+    sleep(0.5) # This delay is crucial for AI vs AI mode, without it, two sockets may not connect successfully
+    agent2 = PseudoAI(PLAYER_2)
 
-if __name__ == "__main__":
-    agent = PseudoAI(PLAYER_2)
-    #agent2 = PseudoAI(PLAYER_2)
-    while 1:
-        # Turn 1
-        agent.get_game_status()
-        agent.get_valid_moves()
-        #print_game_status(agent.game_status)
-        agent.play()
-        if agent.move == 'q':
-            break
+    while agent.is_replay:
+        while not agent.over:
+            # Turn 1
+            agent.get_game_status()
+            agent.get_valid_moves()
+            agent.play()
 
-        # Turn 2
-        #agent2.get_game_status()
-        #print_game_status(agent2.game_status)
-        #agent2.play()
-        #if agent2.move == 'q':
-        #    break
+            # Turn 2
+            agent2.get_game_status()
+            agent2.get_valid_moves()
+            agent2.play()
 
     agent.destroy()
-    #agent2.destroy()
+    agent2.destroy()
+
+if __name__ == "__main__":
