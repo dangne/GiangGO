@@ -30,8 +30,11 @@ WHITE           = 2
 WHITE_CONFIG    = {'fill' : 'white', 'width' : 3}
 
 
-KOMI = 7
+KOMI            = 7
 PLAYER_1        = True
 PLAYER_2        = False
 HUMAN           = True
 AI              = False
+
+
+DELAY           = 0.05

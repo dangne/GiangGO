@@ -1,69 +1,57 @@
 from Player import *
 from Go import *
 from Constants import *
-from time import sleep
 
 def main():
-    # In training mode, delays are removed to enhance processing speed
-    training_mode = True
-
-    P1 = Player(name = 'Dang'   , kind = AI, port = PLAYER_1)
-    P2 = Player(name = 'GiangGO', kind = AI, port = PLAYER_2)
-    game = Go(game_mode = (P1.kind, P2.kind))
+    # Instantiate Game and Players objects
+    P1 = Player(name = 'Dang'   , kind = AI)
+    P2 = Player(name = 'GiangGO', kind = AI)
+    game = Go(game_mode = (P1.kind, P2.kind), display = True, delay = False)
     print("Game begin!")
-    while game.is_replay:
+
+    # Main game
+    while game.replay:
         while not game.over:
-    
-    
-    
             # --------------- PLAYER 1 --------------- #
+            print("----- Player 1 turn -----")
+
+            # Print current score
             score = game.score()
-            print("--- Player 1 turn")
             print("Player 1 score:", score[0])
             print("Player 2 score:", score[1])
-            game.is_pass = False
+
+            # Receive player's move
             if P1.kind == AI:
-                P1.get_game_status(game.get_status())
-            valid_moves = game.get_valid_moves()
-            if len(valid_moves) == 0:
-                game.over = True
-            while not game.over and not game.is_pass and game.turn == PLAYER_1:
-                if P1.kind == AI:
-                    P1.get_valid_moves(valid_moves)
-                    game.read_console_input(P1.make_move())
+                # For AI: no need to wait
+                P1.recv_game_data(game.get_game_data())
+                game.read_console_input(P1.play())
                 game.update()
-    
-            if not game.is_pass: # If the player did not pass, reset the pass counter
-                game.pass_cnt = 0
-    
-            if P1.kind == P2.kind == AI and not training_mode: 
-                sleep(0.5)
-    
+            else:
+                # For HUMAN: the game waits until player make its move
+                while game.turn == PLAYER_1:
+                    game.update()
+
+
             # --------------- PLAYER 2 --------------- #
+            print("----- Player 2 turn -----")
+
+            # Print current score
             score = game.score()
-            print("--- Player 2 turn")
             print("Player 1 score:", score[0])
             print("Player 2 score:", score[1])
-            game.is_pass = False
+
+            # Receive player's move
             if P2.kind == AI:
-                P2.get_game_status(game.get_status())
-            valid_moves = game.get_valid_moves()
-            if len(valid_moves) == 0:
-                game.over = True
-            while not game.over and not game.is_pass and game.turn == PLAYER_2:
-                if P2.kind == AI:
-                    P2.get_valid_moves(valid_moves)
-                    game.read_console_input(P2.make_move())
+                # For AI: no need to wait
+                P2.recv_game_data(game.get_game_data())
+                game.read_console_input(P2.play())
                 game.update()
-    
-            if not game.is_pass: # If the player did not pass, reset the pass counter
-                game.pass_cnt = 0
+            else:
+                # For HUMAN: the game waits until player make its move
+                while game.turn == PLAYER_2:
+                    game.update()
 
-            if P1.kind == P2.kind == AI and not training_mode: 
-                sleep(0.5)
         game.result_and_replay()
-        
-
 
 if __name__ == "__main__":
     main()

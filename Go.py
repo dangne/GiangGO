@@ -4,9 +4,8 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from tkinter.filedialog import asksaveasfilename
 from copy import deepcopy
+from time import sleep
 from Constants import *
-from UniversalFunctions import *
-
 
 class Go:
     # Game data:
@@ -19,14 +18,19 @@ class Go:
     turn        = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
     pass_cnt    = 0                             # Count the passes, if 2 then game_over
     is_resign   = False                         # Indicates if one player decided to resign
-    is_pass     = False                         # Indicates if one player passed thy move
-    is_replay   = True                          # Indicates if user want to replay
+    replay      = True                          # Indicates if user want to replay
 
-    def __init__(self, game_mode, display = True):
-        self.game_mode = game_mode
-        # User can decide to turn on or off the display to enhance processing speed
-        # For example: in AI vs AI training mode, turning on the display may not be necessary
-        if display:
+    def __init__(self, game_mode, display, delay):
+        self.game_mode      = game_mode
+        self.display        = display
+        self.delay          = delay
+        '''
+        In AI vs AI training mode:
+            No display
+            No delay
+            No pause
+        '''
+        if self.display:
             self.draw_window()
             self.draw_menu()
             self.draw_board()
@@ -38,8 +42,13 @@ class Go:
         if self.game_mode != (AI, AI):
             self.init_graphical_input()
 
+        # Win count window
+        if self.display == True and self.delay == False:
+            self.init_win_count()
 
 
+
+    ##### GAME INTERFACE
     def draw_window(self):
         # Create Tk object
         self.root = Tk()
@@ -79,38 +88,37 @@ class Go:
 
         # Draw lines
         [[self.canvas.create_line(X0 + (CELL_W)*i,
-                                    Y0,
-                                    X0 + (CELL_W)*i, 
-                                    YN,
-                                    width = 3 if i == 0 or i == 8 else 1),
-            self.canvas.create_line(X0,
-                                    Y0 + (CELL_H)*i,
-                                    XN,
-                                    Y0 + (CELL_H)*i,
-                                    width = 3 if i == 0 or i == 8 else 1)]
-                                    for i in range(9)]
+                                  Y0,
+                                  X0 + (CELL_W)*i, 
+                                  YN,
+                                  width = 3 if i == 0 or i == 8 else 1),
+          self.canvas.create_line(X0,
+                                  Y0 + (CELL_H)*i,
+                                  XN,
+                                  Y0 + (CELL_H)*i,
+                                  width = 3 if i == 0 or i == 8 else 1)]
+                                  for i in range(9)]
 
         # Draw star points
         [self.canvas.create_oval(X0 - S_R/2 + (CELL_W)*j, 
-                                    Y0 - S_R/2 + (CELL_W)*i,
-                                    X0 + S_R/2 + (CELL_W)*j, 
-                                    Y0 + S_R/2 + (CELL_W)*i,
-                                    fill = 'black')
-                                    for (i, j) in [(2,2), (2,6), (6,2), (6,6), (4,4)]]
-
+                                 Y0 - S_R/2 + (CELL_W)*i,
+                                 X0 + S_R/2 + (CELL_W)*j, 
+                                 Y0 + S_R/2 + (CELL_W)*i,
+                                 fill = 'black')
+                                 for (i, j) in [(2,2), (2,6), (6,2), (6,6), (4,4)]]
 
 
 
     def draw_stones(self):
         # Initially, all stones are invisible (FREE_CONFIG)
         self.stone = [[self.canvas.create_oval(X0 - B_R/2 + (CELL_W)*j,
-                                                Y0 - B_R/2 + (CELL_W)*i,
-                                                X0 + B_R/2 + (CELL_W)*j,
-                                                Y0 + B_R/2 + (CELL_W)*i,
-                                                FREE_CONFIG,
-                                                tags = 'stone') 
-                                                for j in range(9)]
-                                                for i in range(9)]
+                                               Y0 - B_R/2 + (CELL_W)*i,
+                                               X0 + B_R/2 + (CELL_W)*j,
+                                               Y0 + B_R/2 + (CELL_W)*i,
+                                               FREE_CONFIG,
+                                               tags = 'stone') 
+                                               for j in range(9)]
+                                               for i in range(9)]
 
 
 
@@ -202,152 +210,32 @@ class Go:
 
 
 
-    def read_console_input(self, move):
-        # This method verifies validity for console input moves 
-        if move == bytes([9, 9]): # Pass 
-            self.pass_b()
-        elif not self.valid_move(move):
-            print("Invalid move. Please try again.")
-        else:
-            self.make_move(move)
+    def init_win_count(self):
+        # Win counter window
+        self.win_count = Toplevel(bg = 'white') 
+        self.win_count.title("Win counter") 
+        self.win_count.resizable(True, False)
 
+        # Player 1's number of win
+        self.P1_win = StringVar()
+        self.P1_win.set('0') 
+        Label(self.win_count, text = "Player 1 win: ", bg = 'white').grid(row = 0, column = 0)
+        self.P1_text = Label(self.win_count, textvariable = self.P1_win, bg = 'white')
+        self.P1_text.grid(row = 0, column = 1)
 
+        # Player 2's number of win
+        self.P2_win = StringVar()
+        self.P2_win.set('0') 
+        Label(self.win_count, text = "Player 2 win: ", bg = 'white').grid(row = 1, column = 0)
+        self.P2_text = Label(self.win_count, textvariable = self.P2_win, bg = 'white')
+        self.P2_text.grid(row = 1, column = 1)
 
-    def read_graphical_input(self, event):
-        # This method verifies validity for graphical input moves 
-        i = int((event.y - Y0 + CELL_H/2)/CELL_H)
-        j = int((event.x - X0 + CELL_W/2)/CELL_W)
-
-        if not (self.is_inside(event.x, event.y) and self.valid_move((i, j))):
-            print("Invalid move. Please try again.")
-        else:
-            self.make_move((i,j))
-
-
-
-    def valid_move(self, move):
-        def is_alive(x, y):
-            # Same idea of Khoi :3
-            if not all(0 <= i <= 8 for i in (x, y)): return False
-            if self.temp_status[x][y] == FREE: return True
-            if self.visited[x][y] or self.temp_status[x][y] != self.color: return False
-            self.visited[x][y] = True
-            return any(is_alive(x + i, y + j) for (i, j) in ((0, -1), (0, 1), (-1, 0), (1, 0)))
-             
-        # First, check for elementary conditions
-        i, j = move
-        if not (all(0 <= _ <= 8 for _ in move) and self.status[i][j] == FREE):
-            return False
-
-        self.temp_status        = deepcopy(self.status)
-        self.temp_status[i][j]  = BLACK if self.turn else WHITE
-
-        # Second, if pass, check for capture_success 
-        if self.capture():
-            # If capture success, check for Ko rule 
-            return self.prev_status != self.temp_status 
-        else:
-            # If capture fail, check for alive condition
-            self.visited = [[False]*9 for _ in range(9)]
-            self.color   = BLACK if self.turn else WHITE 
-            return is_alive(i, j)
-
-
-
-    def make_move(self, move):
-        # IMPORTANT!
-        # Call this method only when a move is verified as a valid move 
-        i, j = move
-
-        # Announce 
-        print('=> Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')\n')
-
-        # Record result (For Ko rule)
-        self.prev_status    = deepcopy(self.status)
-        self.status         = deepcopy(self.temp_status)
-        
-        # Update GUI
-        for i in range(9):
-            for j in range(9):
-                self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]]) 
-
-        # Switch turn
-        self.turn = not self.turn
-
-
-
-    def capture(self):
-        # This method puts all connected stones into one list then kill them all if capture condition is true
-        def BFS(x, y):
-            if not all(-1 < i < 9 for i in (x, y)):
-                return 
-            if self.temp_status[x][y] == FREE:
-                self.is_captured = False 
-            if self.visited[x][y] or self.temp_status[x][y] != self.opponent_color: 
-                return
-            self.visited[x][y] = True
-            self.connected_stones.append((x, y))
-            [BFS(x + i, y + j) for (i, j) in ((0, -1), (0, 1), (-1, 0), (1, 0))]
-
-        self.visited             = [[False]*9 for _ in range(9)]
-        self.opponent_color      = WHITE if self.turn else BLACK
-        self.is_captured         = True
-        self.capture_success     = False
-
-        for i in range(9):
-            for j in range(9):
-                if not self.visited[i][j] and self.temp_status[i][j] == self.opponent_color:
-                    self.is_captured         = True
-                    self.connected_stones    = []
-                    BFS(i, j)
-                    if self.is_captured:
-                        self.capture_success = True 
-                        for _ in self.connected_stones:
-                            self.temp_status[_[0]][_[1]] = FREE
-
-        return self.capture_success
-
-    def grouping_area(self, area_check_list, x, y):
-        if x<0 or x>8 or y<0 or y>8 or area_check_list[x][y]==1:
-            return 0,0,0
-
-        if self.status[x][y]==0:
-            area_check_list[x][y]=1
-            cu,bu,wu = self.grouping_area(area_check_list,x-1,y)
-            cd,bd,wd = self.grouping_area(area_check_list,x+1,y)
-            cl,bl,wl = self.grouping_area(area_check_list,x,y-1)
-            cr,br,wr = self.grouping_area(area_check_list,x,y+1)
-            c=cu+cd+cl+cr
-            b=bu|bd|bl|br
-            w=wu|wd|wl|wr
-            return c+1,b,w
-
-        if self.status[x][y]==1:
-            return 0,1,0
-
-        if self.status[x][y]==2:
-            return 0,0,1
-
-
-
-    def score(self):
-        area_check_list=[[0]*9 for _ in range(9)]
-        self.black_score=0
-        self.white_score=KOMI
-
-        for i in range(9):
-            for j in range(9):
-                if self.status[i][j]==0 and area_check_list[i][j]==0:
-                    c,b,w=self.grouping_area(area_check_list, i, j)
-                    if b==1 and w==0:
-                        self.black_score+=c 
-                    if b==0 and w==1:
-                        self.white_score+=c
-                if self.status[i][j]==1:
-                    self.black_score+=1
-                if self.status[i][j]==2:
-                    self.white_score+=1
-        return self.black_score,self.white_score
+        # Number of even
+        self.even = StringVar()
+        self.even.set('0') 
+        Label(self.win_count, text = "Even: ", bg = 'white').grid(row = 2, column = 0)
+        self.even_text = Label(self.win_count, textvariable = self.even, bg = 'white')
+        self.even_text.grid(row = 2, column = 1)
 
 
 
@@ -358,8 +246,7 @@ class Go:
         self.turn           = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
         self.pass_cnt       = 0
         self.is_resign      = False
-        self.is_pass        = False
-        self.is_replay      = True
+        self.replay      = True
 
         for i in range(9):
             for j in range(9):
@@ -435,7 +322,7 @@ class Go:
 
 
     def about(self):
-        self.about_tab = Toplevel(width = POPUP_W, height = POPUP_H, bg = 'white') 
+        self.about_tab = Toplevel(bg = 'white') 
         self.about_tab.title("About") 
         self.about_tab.geometry("%dx%d" % (POPUP_W, POPUP_H))
         self.about_tab.resizable(False, False)
@@ -472,9 +359,13 @@ Handicap:       No
 
 
     def pass_b(self):
-        self.is_pass = True
         self.pass_cnt += 1
         self.turn = not self.turn
+
+        # If two consecutive passes -> Game over
+        if self.pass_cnt >= 2:
+            self.over = True
+            self.result_and_replay()
 
 
 
@@ -493,15 +384,193 @@ Handicap:       No
             else:
                 win = '2' if self.white_score > self.black_score else '1'
 
-        # Pop-up window
-        if win == 0:
-            text = 'BOTH PLAYERS ARE EVEN\nReplay?'
+        if self.delay:
+            # Show pop-up window
+            if win == 0:
+                text = 'BOTH PLAYERS ARE EVEN\nReplay?'
+            else:
+                text = 'PLAYER ' + win + ' WIN!\nReplay?'
+            self.replay = messagebox.askyesno("Announcement", text)
         else:
-            text = 'PLAYER ' + win + ' WIN!\nReplay?'
-        self.is_replay = messagebox.askyesno("Announcement", text)
+            # Show win counter window
+            if win == '1':
+                temp = int(self.P1_win.get()) + 1
+                print(temp)
+                self.P1_win.set(str(temp))
+            elif win == '2':
+                temp = int(self.P2_win.get()) + 1
+                print(temp)
+                self.P2_win.set(str(temp))
+            else:
+                temp = int(self.even.get()) + 1
+                print(temp)
+                self.even.set(str(temp))
+            self.win_count.update()
 
-        if self.is_replay:
+
+    
+        print("Winner: " + str(win))
+        if self.replay:
             self.new_game()
+
+
+
+    ##### GAME ENGINE
+    def read_console_input(self, move):
+        # This method verifies validity for console input moves 
+        if move == (9, 9): # Pass 
+            self.pass_b()
+        elif not self.valid_move(move):
+            print("Invalid move. Please try again.")
+        else:
+            self.make_move(move)
+
+
+
+    def read_graphical_input(self, event):
+        # This method verifies validity for graphical input moves 
+        i = int((event.y - Y0 + CELL_H/2)/CELL_H)
+        j = int((event.x - X0 + CELL_W/2)/CELL_W)
+
+        if not (self.is_inside(event.x, event.y) and self.valid_move((i, j))):
+            print("Invalid move. Please try again.")
+        else:
+            self.make_move((i,j))
+
+
+
+    def valid_move(self, move):
+        def is_alive(x, y):
+            # Use BFS algorithm to check for alive condition
+            if not all(0 <= i <= 8 for i in (x, y)): return False
+            if self.temp_status[x][y] == FREE: return True
+            if self.visited[x][y] or self.temp_status[x][y] != self.color: return False
+            self.visited[x][y] = True
+            return any(is_alive(x + i, y + j) for (i, j) in ((0, -1), (0, 1), (-1, 0), (1, 0)))
+             
+        # First, check for elementary conditions
+        i, j = move
+        if not (all(0 <= _ <= 8 for _ in move) and self.status[i][j] == FREE):
+            return False
+
+        self.temp_status        = deepcopy(self.status)
+        self.temp_status[i][j]  = BLACK if self.turn else WHITE
+
+        # Second, if pass, check for capture_success 
+        if self.capture():
+            # If capture success, check for Ko rule 
+            return self.prev_status != self.temp_status 
+        else:
+            # If capture fail, check for alive condition
+            self.visited = [[False]*9 for _ in range(9)]
+            self.color   = BLACK if self.turn else WHITE 
+            return is_alive(i, j)
+
+
+
+    def make_move(self, move):
+        # IMPORTANT!
+        # Call this method only when a move is verified as a valid move 
+        i, j = move
+
+        # Announce 
+        print('=> Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')\n')
+
+        # Record result (For Ko rule)
+        self.prev_status    = deepcopy(self.status)
+        self.status         = deepcopy(self.temp_status)
+        
+        # Update GUI
+        for i in range(9):
+            for j in range(9):
+                self.canvas.itemconfig(self.stone[i][j], [FREE_CONFIG, BLACK_CONFIG, WHITE_CONFIG][self.status[i][j]]) 
+
+        # Switch turn
+        self.turn = not self.turn
+
+        # Reset pass counter to 0
+        self.pass_cnt = 0
+
+        # Delay
+        if self.delay:
+            sleep(DELAY)
+
+
+
+    def capture(self):
+        # This method puts all connected stones into one list then kill them all if capture condition is true
+        def BFS(x, y):
+            if not all(-1 < i < 9 for i in (x, y)):
+                return 
+            if self.temp_status[x][y] == FREE:
+                self.is_captured = False 
+            if self.visited[x][y] or self.temp_status[x][y] != self.opponent_color: 
+                return
+            self.visited[x][y] = True
+            self.connected_stones.append((x, y))
+            [BFS(x + i, y + j) for (i, j) in ((0, -1), (0, 1), (-1, 0), (1, 0))]
+
+        self.visited             = [[False]*9 for _ in range(9)]
+        self.opponent_color      = WHITE if self.turn else BLACK
+        self.is_captured         = True
+        self.capture_success     = False
+
+        for i in range(9):
+            for j in range(9):
+                if not self.visited[i][j] and self.temp_status[i][j] == self.opponent_color:
+                    self.is_captured         = True
+                    self.connected_stones    = []
+                    BFS(i, j)
+                    if self.is_captured:
+                        self.capture_success = True 
+                        for _ in self.connected_stones:
+                            self.temp_status[_[0]][_[1]] = FREE
+
+        return self.capture_success
+
+
+
+    def grouping_area(self, area_check_list, x, y):
+        if x<0 or x>8 or y<0 or y>8 or area_check_list[x][y]==1:
+            return 0,0,0
+
+        if self.status[x][y]==0:
+            area_check_list[x][y]=1
+            cu,bu,wu = self.grouping_area(area_check_list,x-1,y)
+            cd,bd,wd = self.grouping_area(area_check_list,x+1,y)
+            cl,bl,wl = self.grouping_area(area_check_list,x,y-1)
+            cr,br,wr = self.grouping_area(area_check_list,x,y+1)
+            c=cu+cd+cl+cr
+            b=bu|bd|bl|br
+            w=wu|wd|wl|wr
+            return c+1,b,w
+
+        if self.status[x][y]==1:
+            return 0,1,0
+
+        if self.status[x][y]==2:
+            return 0,0,1
+
+
+
+    def score(self):
+        area_check_list=[[0]*9 for _ in range(9)]
+        self.black_score=0
+        self.white_score=KOMI
+
+        for i in range(9):
+            for j in range(9):
+                if self.status[i][j]==0 and area_check_list[i][j]==0:
+                    c,b,w=self.grouping_area(area_check_list, i, j)
+                    if b==1 and w==0:
+                        self.black_score+=c 
+                    if b==0 and w==1:
+                        self.white_score+=c
+                if self.status[i][j]==1:
+                    self.black_score+=1
+                if self.status[i][j]==2:
+                    self.white_score+=1
+        return self.black_score,self.white_score
 
 
 
@@ -511,25 +580,24 @@ Handicap:       No
 
 
 
-    def get_status(self): # Return a 82-long integer list. First number indicates self.over
-        current_status = [int(self.over)]
-        for i in range(9):
-            for j in range(9):
-                current_status.append(self.status[i][j])
-        return current_status
+    def get_game_data(self):
+        '''
+        Data format:
+            Game status
+            Valid moves
+            Score
+        '''
+        # Get valid moves
+        self.valid_moves = [(9, 9)]
+        [self.valid_moves.append([i, j])
+                for j in range(9)
+                for i in range(9)
+                if self.valid_move((i, j))]
 
+        game_data = [self.status, self.valid_moves, (self.black_score, self.white_score)]
+        return game_data
 
-    def get_valid_moves(self):
-        self.valid_moves = []
-        for i in range(9):
-            for j in range(9):
-                if self.valid_move((i, j)):
-                    self.valid_moves.append(i)
-                    self.valid_moves.append(j)
-
-        return self.valid_moves
 
 
     def update(self): # Update GUI display
-        if len(self.valid_moves) == 0 or self.pass_cnt >= 2: self.over = True
         self.root.update()
