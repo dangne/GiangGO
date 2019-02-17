@@ -9,4 +9,4 @@ The program provides 3 game modes:
 * HUMAN vs AI
 * AI vs AI
 
-To select the mode you want, edit each player's kind in main.py file. Other features are somewhat self-explanatory
+To select the mode you want, edit each player's kind in main.py file. Other features are somewhat self-explanatory.
