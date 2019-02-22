@@ -1,6 +1,6 @@
 # Game dimension 
-SCREEN_W        = 810
-SCREEN_H        = 900
+SCREEN_W        = 648 
+SCREEN_H        = 720
 CANVAS_W        = SCREEN_W
 CANVAS_H        = CANVAS_W
 BOARD_W         = CANVAS_W * 0.75
@@ -35,6 +35,6 @@ PLAYER_1        = True
 PLAYER_2        = False
 HUMAN           = True
 AI              = False
-
+PLAYER_COLOR = ['white','black']
 
 DELAY           = 0.05
