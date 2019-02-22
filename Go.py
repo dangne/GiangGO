@@ -477,7 +477,6 @@ Handicap:       No
         # Announce 
         # Update move
         self.move_number += 1
-       # print('=> Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')\n')
         print(PLAYER_COLOR[self.turn] + '(' + str(self.move_number) + '): ' +  str(chr(ord('A')+j)) + str(9-i))
         # Record result (For Ko rule)
         self.prev_status    = deepcopy(self.status)
