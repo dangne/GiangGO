@@ -13,12 +13,9 @@ def main():
     while game.replay:
         while not game.over:
             # --------------- PLAYER 1 --------------- #
-            print("----- Player 1 turn -----")
 
             # Print current score
-            score = game.score()
-            print("Player 1 score:", score[0])
-            print("Player 2 score:", score[1])
+            #score = game.score())
 
             # Receive player's move
             if P1.kind == AI:
@@ -33,12 +30,9 @@ def main():
 
 
             # --------------- PLAYER 2 --------------- #
-            print("----- Player 2 turn -----")
 
             # Print current score
-            score = game.score()
-            print("Player 1 score:", score[0])
-            print("Player 2 score:", score[1])
+            #score = game.score()
 
             # Receive player's move
             if P2.kind == AI:

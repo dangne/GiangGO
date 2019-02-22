@@ -18,7 +18,7 @@ class Go:
     pass_cnt    = 0                             # Count the passes, if 2 then game_over
     is_resign   = False                         # Indicates if one player decided to resign
     replay      = True                          # Indicates if user want to replay
-
+    move_number = 0
     def __init__(self, game_mode, display, delay):
         self.game_mode      = game_mode
         self.display        = display
@@ -139,12 +139,12 @@ class Go:
             # Vertical coordiantes
             self.canvas.create_text(X0 - CELL_W*rate,
                                     Y0 + CELL_H*i,
-                                    text = str(i),
+                                    text = str(9-i),
                                     font = COORDINATE_FONT) 
 
             self.canvas.create_text(XN + CELL_W*rate,
                                     Y0 + CELL_H*i,
-                                    text = str(i),
+                                    text = str(9-i),
                                     font = COORDINATE_FONT) 
 
 
@@ -432,7 +432,8 @@ Handicap:       No
         j = int((event.x - X0 + CELL_W/2)/CELL_W)
 
         if not (self.is_inside(event.x, event.y) and self.valid_move((i, j))):
-            print("Invalid move. Please try again.")
+           # print("Invalid move. Please try again.")
+           print('\nIllegal move: ' + str(chr(ord('A')+j)) + str(9-i))
         else:
             self.make_move((i,j))
 
@@ -473,8 +474,9 @@ Handicap:       No
         i, j = move
 
         # Announce 
-        print('=> Player ' + str(2 - self.turn) + ' played at (' + str(i) + ',' + str(j) + ')\n')
-
+        # Update move
+        self.move_number += 1
+        print(PLAYER_COLOR[self.turn] + '(' + str(self.move_number) + '): ' +  str(chr(ord('A')+j)) + str(9-i))
         # Record result (For Ko rule)
         self.prev_status    = deepcopy(self.status)
         self.status         = deepcopy(self.temp_status)
