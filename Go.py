@@ -9,7 +9,6 @@ from Constants import *
 
 class Go:
     # Game data:
-    mode        = (HUMAN, HUMAN)                # Indicates if the game is HUMAN vs HUMAN or HUMAN vs AI or AI vs AI 
     status      = [[FREE]*9 for _ in range(9)]  # Hold the current status of the game
     prev_status = [[None]*9 for _ in range(9)]  # Hold the previous status of the game
     stone       = [[None]*9 for _ in range(9)]  # (GUI purpose) Hold IDs of stones on the canvas 
