@@ -35,6 +35,6 @@ PLAYER_1        = True
 PLAYER_2        = False
 HUMAN           = True
 AI              = False
-PLAYER_COLOR = ['white','black']
+PLAYER_COLOR = ['White','Black']
 
 DELAY           = 0.05
