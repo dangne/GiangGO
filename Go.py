@@ -19,6 +19,7 @@ class Go:
     is_resign   = False                         # Indicates if one player decided to resign
     replay      = True                          # Indicates if user want to replay
     move_number = 0
+
     def __init__(self, game_mode, display, delay):
         self.game_mode      = game_mode
         self.display        = display
@@ -245,7 +246,7 @@ class Go:
         self.turn           = PLAYER_1                      # Indicates game's turn. Initially, it's PLAYER_1's 
         self.pass_cnt       = 0
         self.is_resign      = False
-        self.replay      = True
+        self.replay         = True
 
         for i in range(9):
             for j in range(9):
@@ -256,7 +257,7 @@ class Go:
     def open_game(self):
         # Open file dialog
         filename = askopenfilename(initialdir = "./",
-                                   initialfile = initialname,
+                                   initialfile = "",
                                    filetypes = (("Text File", "*.txt"), ("All Files","*.*")),
                                    title = "Choose a file.")
 
@@ -370,6 +371,8 @@ Handicap:       No
 
     def resign_b(self):
         self.is_resign = self.over = True
+        self.result_and_replay()
+
 
 
 
@@ -432,8 +435,7 @@ Handicap:       No
         j = int((event.x - X0 + CELL_W/2)/CELL_W)
 
         if not (self.is_inside(event.x, event.y) and self.valid_move((i, j))):
-           # print("Invalid move. Please try again.")
-           print('\nIllegal move: ' + str(chr(ord('A')+j)) + str(9-i))
+            print('\nIllegal move: ' + str(chr(ord('A')+j)) + str(9-i))
         else:
             self.make_move((i,j))
 
@@ -473,7 +475,6 @@ Handicap:       No
         # Call this method only when a move is verified as a valid move 
         i, j = move
 
-        # Announce 
         # Update move
         self.move_number += 1
         print(PLAYER_COLOR[self.turn] + '(' + str(self.move_number) + '): ' +  str(chr(ord('A')+j)) + str(9-i))
