@@ -15,7 +15,7 @@ def main():
             # --------------- PLAYER 1 --------------- #
 
             # Print current score
-            #score = game.score())
+            score = game.score()
 
             # Receive player's move
             if P1.kind == AI:
@@ -32,7 +32,7 @@ def main():
             # --------------- PLAYER 2 --------------- #
 
             # Print current score
-            #score = game.score()
+            score = game.score()
 
             # Receive player's move
             if P2.kind == AI:
